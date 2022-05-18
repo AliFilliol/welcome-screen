@@ -3,38 +3,22 @@
   
     <h1 class>{{ title }}</h1>
     <h2>{{ currentDate() }}</h2>
-    <p>{{entries}}</p>
+    
   
-      
-      <ul class="ul">
-          <li>
-    <span style="color:red"> 14:00 Uhr </span> <br>
-    <span style="color:orange"> Basisbeschäftigung Besuch</span> <br>
-    <span style="color:orange"> Interessierte für den zweiten Kurs werden uns besuchen</span>
-          </li>
-        </ul>
+    <ul class="ul" v-if="entries">
+        <li v-for="entry in entries" :key="entry.id">
 
+          <span style="color:red">{{ entry[0]}}, {{ entry[1].replaceAll('/', '.')}} </span> <br>
+          <span style="color:orange"> {{ entry[2]}}</span> <br>
+          <span style="color:orange"> {{ entry[3]}}</span>
+        </li>
+      </ul>
 
-       <ul class="ul">
-          <li>
-    <span style="color:red"> 14:00 Uhr </span> <br>
-    <span style="color:orange"> Basisbeschäftigung Besuch</span> <br>
-    <span style="color:orange"> Interessierte für den zweiten Kurs werden uns besuchen</span>
-          </li>
-        </ul> 
-
-        <ul class="ul">
-          <li>
-    <span style="color:red"> 14:00 Uhr </span> <br>
-    <span style="color:orange"> Basisbeschäftigung Besuch</span> <br>
-    <span style="color:orange"> Interessierte für den zweiten Kurs werden uns besuchen</span>
-          </li>
-        </ul>
-
+    <p id="noEntries" v-else>Keine Termin geplant!</p>
     <footer class="footer">
       <img class="img-footer" alt="SEB Logo" src="./assets/STZH_SEB_Logo.png">
       <img class="img-footer" alt="SAG Logo" src="./assets/SAG_Logo_De.png">
-      <img class="img-footer" alt="Opportunity" src="./assets/Opportunity.png">
+
     </footer>
 
   </div> 
@@ -51,7 +35,7 @@ export default {
   data() {
     return {
     title: "Welcome to Opportunity",
-    sheet_id: "spreadsheets/d/1a81aI0Y8ViZO0tI92h2YSMqVQJ8hmNNMyMylXgvwiU4",
+    sheet_id: "1a81aI0Y8ViZO0tI92h2YSMqVQJ8hmNNMyMylXgvwiU4",
     api_token: "AIzaSyA-qeDXOhEeQDA0vQf7LgkF7DQtGnAtmAU",
     entries: [],
     
@@ -59,30 +43,18 @@ export default {
 
   },
 
-  // computed properties are like data properties, but with a method combined and it gets executed automatically, instead of calling a function explicitly
   computed: {
     gsheet_url() {
-  return `https://sheets.googleapis.com/v4/spreadsheets/${this.sheet_id}/values:batchGet?ranges=A2%3AE100&valueRenderOption=FORMATTED_VALUE&key=${this.api_token}`;
-  }
-},
-
-
+      return `https://sheets.googleapis.com/v4/spreadsheets/${this.sheet_id}/values:batchGet?ranges=A2%3AE100&valueRenderOption=FORMATTED_VALUE&key=${this.api_token}`;
+    }
+  },
 
   methods: {
     getData () {
-      axios.get (this.gsheet_url).then ((response) => {
-          this.entries = response.data.valueRanges [0].values;
-
-      });
-
-    },
-
-    updateCurrentDate() {
-
-    },
-    
-    refreshData () {
-
+      axios.get(this.gsheet_url).then((response) => {
+          this.entries = response.data.valueRanges[0].values;
+          
+      });  
     },
 
     currentDate() {
@@ -95,13 +67,22 @@ export default {
           return day + "." + "0" + month + "." + year;
         }
         return dateTime;
-      }
+      }, 
+    
+    refreshData () {
+        this.updateCurrentDate();
+        this.getData();
+     }
+    },
+   
+   mounted() {
+    this.refreshData();
+    setInterval (function() {
+      this.refreshData(); 
+    }, 1000* 60* 30);
 
-  },
-
-    mounted() {
-    this.getData();
     }
+    
   };
 
 </script>
@@ -128,6 +109,16 @@ font-size: 62px;
 line-height: 75px;
 color: #9AA7B1;
 
+}
+
+#noEntries
+{
+font-family: 'Inter';
+font-style: normal;
+font-weight: 900;
+font-size: 62px;
+line-height: 75px;
+color:yellowgreen; 
 }
 
 .footer { 
@@ -166,7 +157,7 @@ color: #9AA7B1;
   
 }
 
- .li {
+ li {
   margin-top: 10px;
   margin-bottom: 80px;
   margin-right: 150px;
@@ -177,12 +168,10 @@ color: #9AA7B1;
   font-size: 20px;
   line-height: 86px;
   color: #EB5E00;
+  list-style-type: none;
 }
 
-.unlist{
-list-style-type: none;
 
-}
 
 
 
